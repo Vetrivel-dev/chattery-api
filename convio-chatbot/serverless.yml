@@ -1,0 +1,93 @@
+service: convio-chatbot
+
+custom:
+  dev:
+    DATASOURCE_URL: jdbc:mysql://convio-api-dev.c2gz9p8itqtx.eu-west-2.rds.amazonaws.com:3306/convio-api-dev
+    DATASOURCE_HOST_NAME: convio-api-dev.c2gz9p8itqtx.eu-west-2.rds.amazonaws.com
+    DATASOURCE_DB_NAME: convio-api-dev
+    DATASOURCE_USERNAME: admin
+    DATASOURCE_PASSWORD: M#d4Ktre3ToY&8F
+    DIALOGFLOW_LOCATION: us-central1
+    DIALOGFLOW_AGENTS: 5495f9d3-3760-4b1a-8236-01f233ed1e00
+
+  stage:
+    DATASOURCE_URL: jdbc:mysql://convio-api-dev.c2gz9p8itqtx.eu-west-2.rds.amazonaws.com:3306/convio-api-dev
+    DATASOURCE_HOST_NAME: convio-api-dev.c2gz9p8itqtx.eu-west-2.rds.amazonaws.com
+    DATASOURCE_DB_NAME: convio-api-dev
+    DATASOURCE_USERNAME: admin
+    DATASOURCE_PASSWORD: M#d4Ktre3ToY&8F
+    DIALOGFLOW_LOCATION: us-central1
+    DIALOGFLOW_AGENTS: 5495f9d3-3760-4b1a-8236-01f233ed1e00	
+
+package:
+  patterns:
+    - index.js
+
+provider:
+  name: aws
+  runtime: nodejs16.x
+  region: ${opt:region, "eu-west-2"}
+  stage: ${opt:stage, "dev"}
+  lambdaHashingVersion: 20201221
+  memorySize: 512
+  timeout: 300
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - lambda:InvokeFunction
+      Resource: "*"
+
+# The `functions` block defines what code to deploy
+functions:
+  API:
+    handler: index.handler
+    # The `events` block defines how to trigger the uploadImage.handler code
+    events:
+      - http:
+          path: healthcheck
+          method: post
+          cors: true
+          request:
+            template:
+              application/json: '$input.json("$")'
+      - http:
+          path: detectIndent
+          method: post
+          cors:
+            origin: '*' # <-- Specify allowed origin
+            headers: # <-- Specify allowed headers
+              - Content-Type
+              - X-Amz-Date
+              - Accept
+              - Authorization
+              - X-Api-Key
+              - X-Amz-Security-Token
+              - X-Amz-User-Agent
+            allowCredentials: false
+          request:
+            template:
+              application/json: '$input.json("$")'
+  webhook:
+    handler: index.webhook
+    # The `events` block defines how to trigger the uploadImage.handler code
+    events:
+      - http:
+          path: webhook
+          method: post
+          cors:
+            origin: '*' # <-- Specify allowed origin
+            headers: # <-- Specify allowed headers
+              - Content-Type
+              - X-Amz-Date
+              - Accept
+              - Authorization
+              - X-Api-Key
+              - X-Amz-Security-Token
+              - X-Amz-User-Agent
+            allowCredentials: false
+          request:
+            template:
+              application/json: '$input.json("$")'
+
+
+
