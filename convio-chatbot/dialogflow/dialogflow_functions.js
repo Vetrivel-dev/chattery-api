@@ -6,7 +6,6 @@ const {CONFIGURATION,response} = require('../response_utils/mewsApiUtils');
 const {struct} = require('pb-util');
 const { Console } = require('console');
 const axios = require('axios');
-const dotenv = require('dotenv');
 const {sendEmail,sendEmailToClient,generateEmailTemplateForBooking,generateEmailTemplateForBookingClient,generateEmailTemplateForGroupBooking,generateEmailTemplateForGroupBookingClient} =require('../utils/emailUtils');
 const {roomConfirmation,checkReservation,getRoomCategories,checkRoomAvailability } = require('./reservation');
 const {getConfigurationId,insertCustomerId,getReservationGroupId,getClientIdHotelIdByBusinessId} = require('../utils/connection');
@@ -23,10 +22,12 @@ const detectIntent = async (languageCode, queryText, sessionId,businessId,roomIn
     const hotelId=clientHotel.mewsHotelId;
 
     // For Local
-    // let sessionPath = sessionClient.projectLocationAgentSessionPath(PROJECID,"us-central1","5495f9d3-3760-4b1a-8236-01f233ed1e00", sessionId);
+    
+    let sessionPath = sessionClient.projectLocationAgentSessionPath(PROJECID,"us-central1","5495f9d3-3760-4b1a-8236-01f233ed1e00", sessionId);
 
     // For Server
-    let sessionPath = sessionClient.projectLocationAgentSessionPath(PROJECID,dialogFlowLocation,dialogflowAgents,sessionId);
+
+    // let sessionPath = sessionClient.projectLocationAgentSessionPath(PROJECID,dialogFlowLocation,dialogflowAgents,sessionId);
 
     //The text query request.
     let request = {

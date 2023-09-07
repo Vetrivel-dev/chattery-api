@@ -1,22 +1,23 @@
 // Assuming you are using a SQL database with the 'mysql2' library for the database connection
 const mysql = require('mysql2/promise');
-const dotenv = require('dotenv');
 
 // For Local
-// const dbConfig = {
-//   host: 'convio-api-dev.c2gz9p8itqtx.eu-west-2.rds.amazonaws.com',
-//   user: 'admin',
-//   password: 'M#d4Ktre3ToY&8F',
-//   database: 'convio-api-dev',
-// };
+
+const dbConfig = {
+  host: 'convio-api-dev.c2gz9p8itqtx.eu-west-2.rds.amazonaws.com',
+  user: 'admin',
+  password: 'M#d4Ktre3ToY&8F',
+  database: 'convio_api_dev',
+};
 
 // For Cloud
-const dbConfig = {
-  host: process.env.DATASOURCE_HOST_NAME,
-  user: process.env.DATASOURCE_USERNAME,
-  password: process.env.DATASOURCE_PASSWORD,
-  database: process.env.DATASOURCE_DB_NAME,
-};
+
+// const dbConfig = {
+//   host: process.env.DATASOURCE_HOST_NAME,
+//   user: process.env.DATASOURCE_USERNAME,
+//   password: process.env.DATASOURCE_PASSWORD,
+//   database: process.env.DATASOURCE_DB_NAME,
+// };
 
 // To Get HotelEmail Using HotelId From Business....
 const getHotelEmailById = async (hotelId) => {
