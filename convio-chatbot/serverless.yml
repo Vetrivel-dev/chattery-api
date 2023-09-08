@@ -37,7 +37,7 @@ provider:
         - lambda:InvokeFunction
       Resource: "*"
 
-# The `functions` block defines what code to deploy
+# The `functions` block defines what code to deploys
 functions:
   API:
     handler: index.handler
