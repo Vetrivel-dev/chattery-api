@@ -1,4 +1,4 @@
-name: Deploy Convio_Node_API PROD
+name: Deploy Convio_Node_API DEV
 
 on:
   push:
@@ -46,6 +46,6 @@ jobs:
       - name: Build convio-chatbot lambda
         run: cd convio-chatbot && npm install
       - name: Deploy convio-chatbot API
-        run: cd convio-chatbot && sls plugin install -n serverless-prune-plugin && sls plugin install -n serverless-plugin-ifelse && sls deploy --region eu-west-2 --stage dev
+        run: cd convio-chatbot && sls plugin install -n serverless-prune-plugin && sls deploy --region eu-west-2 --stage dev
 
   
