@@ -44,7 +44,7 @@ jobs:
       - name: Serverless AWS Authentication
         run: sls config credentials --provider aws --key AKIAYSWL5QZRSFZOW2HJ --secret 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
       - name: Build convio-chatbot lambda
-        run: cd convio-chatbot && mvn clean install -DskipTests
+        run: cd convio-chatbot && npm install
       - name: Deploy convio-chatbot API
         run: cd convio-chatbot && sls plugin install -n serverless-prune-plugin && sls plugin install -n serverless-plugin-ifelse && sls deploy --region eu-west-2 --stage dev
 
