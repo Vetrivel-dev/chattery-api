@@ -51,7 +51,7 @@ functions:
               application/json: '$input.json("$")'
   webhook:
     handler: index.webhook
-    # The `events` block defines how to trigger the uploadImage.handler codes
+    # The `events` block defines how to trigger the uploadImage.handler code
     events:
       - http:
           path: webhook
