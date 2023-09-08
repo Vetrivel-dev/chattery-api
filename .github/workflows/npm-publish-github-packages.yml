@@ -3,7 +3,7 @@ name: Deploy Convio_Node_API PROD
 on:
   push:
     branches:
-      - develop
+      - main
     paths:
       - convio-chatbot/**      
 
