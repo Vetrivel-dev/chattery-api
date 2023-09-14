@@ -1,0 +1,293 @@
+# Welcome to Serverless!
+#
+# This file is the main config file for your service.
+# It's very minimal at this point and uses default values.
+# You can always add more config options for more control.
+# We've included some commented out config examples here.
+# Just uncomment any of them to get that config option.
+#
+# For full config options, check the docs:
+#    docs.serverless.com
+#
+# Happy Coding!
+
+service: convio-business
+
+custom:
+  dev:
+    DATASOURCE_URL: jdbc:mysql://13.228.131.80:3306/fullcircledata_bd
+    DATASOURCE_USERNAME: fullcircledata
+    DATASOURCE_PASSWORD: M#d4Ktre3ToY&8F
+    JWT_SECRET_KEY: mySecret
+    JWT_REFRESH_SECRET_KEY: myRefreshSecret
+    JWT_TOKEN_EXPIRATION_IN_SECONDS: 86400
+    JWT_REFRESH_TOKEN_EXPIRATION_IN_SECONDS: 86400
+    SES_EMAIL_FROM: akashguna99@gmail.com
+    SES_ACCESS_KEY: AKIASKA4JS3QJPYVAONN
+    SES_SECRET_KEY: 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
+  stage:
+    DATASOURCE_URL: jdbc:mysql://13.228.131.80:3306/fullcircledata_bd
+    DATASOURCE_USERNAME: fullcircledata
+    DATASOURCE_PASSWORD: M#d4Ktre3ToY&8F
+    JWT_SECRET_KEY: mySecret
+    JWT_REFRESH_SECRET_KEY: myRefreshSecret
+    JWT_TOKEN_EXPIRATION_IN_SECONDS: 86400
+    JWT_REFRESH_TOKEN_EXPIRATION_IN_SECONDS: 86400
+    SES_EMAIL_FROM: akashguna99@gmail.com
+    SES_ACCESS_KEY: AKIASKA4JS3QJPYVAONN
+    SES_SECRET_KEY: 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
+
+provider:
+  name: aws
+  runtime: java8
+  stage: ${opt:stage, "dev"}
+  region: ${opt:region, "eu-west-2"}
+  lambdaHashingVersion: 20201221
+  memorySize: 512
+  timeout: 300
+  environment:
+    DATASOURCE_URL: ${self:custom.${self:provider.stage}.DATASOURCE_URL}
+    DATASOURCE_USERNAME: ${self:custom.${self:provider.stage}.DATASOURCE_USERNAME}
+    DATASOURCE_PASSWORD: ${self:custom.${self:provider.stage}.DATASOURCE_PASSWORD}
+    JWT_SECRET_KEY: ${self:custom.${self:provider.stage}.JWT_SECRET_KEY}
+    JWT_REFRESH_SECRET_KEY: ${self:custom.${self:provider.stage}.JWT_REFRESH_SECRET_KEY}
+    JWT_TOKEN_EXPIRATION_IN_SECONDS: ${self:custom.${self:provider.stage}.JWT_TOKEN_EXPIRATION_IN_SECONDS}
+    JWT_REFRESH_TOKEN_EXPIRATION_IN_SECONDS: ${self:custom.${self:provider.stage}.JWT_REFRESH_TOKEN_EXPIRATION_IN_SECONDS}
+    SES_EMAIL_FROM: ${self:custom.${self:provider.stage}.SES_EMAIL_FROM}
+    SES_ACCESS_KEY: ${self:custom.${self:provider.stage}.SES_ACCESS_KEY}
+    SES_SECRET_KEY: ${self:custom.${self:provider.stage}.SES_SECRET_KEY}
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - lambda:InvokeFunction
+        - secretsmanager:*
+      Resource: "*"
+
+package:
+  artifact: 'target/convio-business-0.0.1-SNAPSHOT.jar'
+
+functions:
+  AuthenticationRequest:
+    handler: com.convio.business.handler.BusinessRequestHandler
+    events:
+      - http:
+          path: /add/business
+          method: post
+          integration: lambda
+          request:
+            template: 
+              application/json: '{"flag": "$input.path("$").flag","authorization": "$input.params().header.get("Authorization")","parameters": {"business":{"idClient": "$input.path("$").parameters.business.idClient","name": "$input.path("$").parameters.business.name","address": "$input.path("$").parameters.business.address","websiteUrl": "$input.path("$").parameters.business.websiteUrl","phone": "$input.path("$").parameters.business.phone","mewsHotelId": "$input.path("$").parameters.business.mewsHotelId","mewsClientId": "$input.path("$").parameters.business.mewsClientId"}}}'
+          cors:
+            origin: '*'
+            headers:
+              - Authorization
+              - X-Amz-Date
+              - Content-Type
+              - X-Api-Key
+              - X-Amz-Security-Token
+              - X-Amz-User-Agent
+            allowCredentials: false
+      - http:
+          path: /update/business
+          method: post
+          integration: lambda
+          request:
+            template: 
+              application/json: '{"flag": "$input.path("$").flag","authorization": "$input.params().header.get("Authorization")","parameters": {"business":{"id": "$input.path("$").parameters.business.id","idClient": "$input.path("$").parameters.business.idClient","name": "$input.path("$").parameters.business.name","address": "$input.path("$").parameters.business.address","websiteUrl": "$input.path("$").parameters.business.websiteUrl","phone": "$input.path("$").parameters.business.phone","status": "$input.path("$").parameters.business.status"}}}'
+          cors:
+            origin: '*'
+            headers:
+              - Authorization
+              - X-Amz-Date
+              - Content-Type
+              - X-Api-Key
+              - X-Amz-Security-Token
+              - X-Amz-User-Agent
+            allowCredentials: false
+      - http:
+          path: /get/business
+          method: post
+          integration: lambda
+          request:
+            template: 
+              application/json: '{"flag": "$input.path("$").flag","authorization": "$input.params().header.get("Authorization")","parameters": {"business":{"limit": "$input.path("$").parameters.business.limit","offSet": "$input.path("$").parameters.business.offSet"}}}'
+          cors:
+            origin: '*'
+            headers:
+              - Authorization
+              - X-Amz-Date
+              - Content-Type
+              - X-Api-Key
+              - X-Amz-Security-Token
+              - X-Amz-User-Agent
+            allowCredentials: false
+      - http:
+          path: /search/business
+          method: post
+          integration: lambda
+          request:
+            template: 
+              application/json: '{"flag": "$input.path("$").flag","authorization": "$input.params().header.get("Authorization")","parameters":{"business":{"limit": "$input.path("$").parameters.business.limit","offSet": "$input.path("$").parameters.business.offSet","name": "$input.path("$").parameters.business.name"}}}'
+          cors:
+            origin: '*'
+            headers:
+              - Authorization
+              - X-Amz-Date
+              - Content-Type
+              - X-Api-Key
+              - X-Amz-Security-Token
+              - X-Amz-User-Agent
+            allowCredentials: false
+      - http:
+          path: /get/business/excel
+          method: post
+          integration: lambda
+          request:
+            template: 
+              application/json: '{"flag": "$input.path("$").flag","authorization": "$input.params().header.get("Authorization")"}'
+          cors:
+            origin: '*'
+            headers:
+              - Authorization
+              - X-Amz-Date
+              - Content-Type
+              - X-Api-Key
+              - X-Amz-Security-Token
+              - X-Amz-User-Agent
+            allowCredentials: false
+      - http:
+          path: /business/getChatbotScript
+          method: post
+          integration: lambda
+          request:
+            template: 
+              application/json: '{"flag": "$input.path("$").flag","authorization": "$input.params().header.get("Authorization")","parameters":{"business":{"id": "$input.path("$").parameters.business.id"}}}'
+          cors:
+            origin: '*'
+            headers:
+              - Authorization
+              - X-Amz-Date
+              - Content-Type
+              - X-Api-Key
+              - X-Amz-Security-Token
+              - X-Amz-User-Agent
+            allowCredentials: false
+      - http:
+          path: /add/internalrules
+          method: post
+          integration: lambda
+          request:
+            template: 
+              application/json: '{"flag": "$input.path("$").flag","authorization": "$input.params().header.get("Authorization")","parameters":{"business":{"mewsHotelId": "$input.path("$").parameters.business.mewsHotelId","internalRules": "$input.path("$").parameters.business.internalRules"}}}'
+          cors:
+            origin: '*'
+            headers:
+              - Authorization
+              - X-Amz-Date
+              - Content-Type
+              - X-Api-Key
+              - X-Amz-Security-Token
+              - X-Amz-User-Agent
+            allowCredentials: false
+      - http:
+          path: /update/internalrules
+          method: post
+          integration: lambda
+          request:
+            template: 
+              application/json: '{"flag": "$input.path("$").flag","authorization": "$input.params().header.get("Authorization")","parameters":{"business":{"id": "$input.path("$").parameters.business.id","mewsHotelId": "$input.path("$").parameters.business.mewsHotelId","internalRules": "$input.path("$").parameters.business.internalRules"}}}'
+          cors:
+            origin: '*'
+            headers:
+              - Authorization
+              - X-Amz-Date
+              - Content-Type
+              - X-Api-Key
+              - X-Amz-Security-Token
+              - X-Amz-User-Agent
+            allowCredentials: false
+      - http:
+          path: /get/internalrules
+          method: post
+          integration: lambda
+          request:
+            template: 
+              application/json: '{"flag": "$input.path("$").flag","authorization": "$input.params().header.get("Authorization")","parameters": {"business":{"limit": "$input.path("$").parameters.business.limit","offSet": "$input.path("$").parameters.business.offSet"}}}'
+          cors:
+            origin: '*'
+            headers:
+              - Authorization
+              - X-Amz-Date
+              - Content-Type
+              - X-Api-Key
+              - X-Amz-Security-Token
+              - X-Amz-User-Agent
+            allowCredentials: false
+      - http:
+          path: /add/openHours
+          method: post
+          integration: lambda
+          request:
+            template: 
+              application/json: '{"flag": "$input.path("$").flag","authorization": "$input.params().header.get("Authorization")","parameters":{"business":{"mewsHotelId": "$input.path("$").parameters.business.mewsHotelId","openHours": "$input.path("$").parameters.business.openHours"}}}'
+          cors:
+            origin: '*'
+            headers:
+              - Authorization
+              - X-Amz-Date
+              - Content-Type
+              - X-Api-Key
+              - X-Amz-Security-Token
+              - X-Amz-User-Agent
+            allowCredentials: false
+      - http:
+          path: /update/openHours
+          method: post
+          integration: lambda
+          request:
+            template: 
+              application/json: '{"flag": "$input.path("$").flag","authorization": "$input.params().header.get("Authorization")","parameters":{"business":{"id": "$input.path("$").parameters.business.id","mewsHotelId": "$input.path("$").parameters.business.mewsHotelId","openHours": "$input.path("$").parameters.business.openHours"}}}'
+          cors:
+            origin: '*'
+            headers:
+              - Authorization
+              - X-Amz-Date
+              - Content-Type
+              - X-Api-Key
+              - X-Amz-Security-Token
+              - X-Amz-User-Agent
+            allowCredentials: false
+      - http:
+          path: /get/openHours
+          method: post
+          integration: lambda
+          request:
+            template: 
+              application/json: '{"flag": "$input.path("$").flag","authorization": "$input.params().header.get("Authorization")","parameters": {"business":{"limit": "$input.path("$").parameters.business.limit","offSet": "$input.path("$").parameters.business.offSet"}}}'
+          cors:
+            origin: '*'
+            headers:
+              - Authorization
+              - X-Amz-Date
+              - Content-Type
+              - X-Api-Key
+              - X-Amz-Security-Token
+              - X-Amz-User-Agent
+            allowCredentials: false
+      - http:
+          path: /get/saveHotelInfo
+          method: post
+          integration: lambda
+          request:
+            template: 
+              application/json: '{"flag": "$input.path("$").flag","authorization": "$input.params().header.get("Authorization")","parameters": {"hotelInfo":{"bankName": "$input.path("$").parameters.hotelInfo.bankName","bankAccountNumber": "$input.path("$").parameters.hotelInfo.bankAccountNumber","bankAccountName": "$input.path("$").parameters.hotelInfo.bankAccountName","businessId": "$input.path("$").parameters.hotelInfo.businessId","type": "$input.path("$").parameters.hotelInfo.type","barOpeningTime": "$input.path("$").parameters.hotelInfo.barOpeningTime","barClosingTime": "$input.path("$").parameters.hotelInfo.barClosingTime","breakfastStartTime": "$input.path("$").parameters.hotelInfo.breakfastStartTime","breakfastEndTime": "$input.path("$").parameters.hotelInfo.breakfastEndTime","menu": "$input.path("$").parameters.hotelInfo.menu","checkInTime": "$input.path("$").parameters.hotelInfo.checkInTime","checkOutTime": "$input.path("$").parameters.hotelInfo.checkOutTime","cockTailDetails": "$input.path("$").parameters.hotelInfo.cockTailDetails","conciergeStartTime": "$input.path("$").parameters.hotelInfo.conciergeStartTime","conciergeEndTime": "$input.path("$").parameters.hotelInfo.conciergeEndTime","creditAndDebitCardName": "$input.path("$").parameters.hotelInfo.creditAndDebitCardName","dinnerStartTime": "$input.path("$").parameters.hotelInfo.dinnerStartTime","dinnerEndTime": "$input.path("$").parameters.hotelInfo.dinnerEndTime","dinnerMenu": "$input.path("$").parameters.hotelInfo.dinnerMenu","drinkMenu": "$input.path("$").parameters.hotelInfo.drinkMenu","eventGuestSpaceCount": "$input.path("$").parameters.hotelInfo.eventGuestSpaceCount","busNo": "$input.path("$").parameters.hotelInfo.busNo","walkTime": "$input.path("$").parameters.hotelInfo.walkTime","leisureCentreOpeningTime": "$input.path("$").parameters.hotelInfo.leisureCentreOpeningTime","leisureCentreClosingTime": "$input.path("$").parameters.hotelInfo.leisureCentreClosingTime","lateCheckInTime": "$input.path("$").parameters.hotelInfo.lateCheckInTime","lunchStartTime": "$input.path("$").parameters.hotelInfo.lunchStartTime","lunchEndTime": "$input.path("$").parameters.hotelInfo.lunchEndTime","lunchMenu": "$input.path("$").parameters.hotelInfo.lunchMenu","restaurantStartTime": "$input.path("$").parameters.hotelInfo.restaurantStartTime","restaurantEndTime": "$input.path("$").parameters.hotelInfo.restaurantEndTime","restaurantMenu": "$input.path("$").parameters.hotelInfo.restaurantMenu","roomServiceMenu": "$input.path("$").parameters.hotelInfo.roomServiceMenu","services": "$input.path("$").parameters.hotelInfo.services"}}}'
+          cors:
+            origin: '*'
+            headers:
+              - Authorization
+              - X-Amz-Date
+              - Content-Type
+              - X-Api-Key
+              - X-Amz-Security-Token
+              - X-Amz-User-Agent
+            allowCredentials: false

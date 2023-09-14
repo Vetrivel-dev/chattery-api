@@ -1,0 +1,143 @@
+# Welcome to Serverless!!
+#
+# This file is the main config file for your service.
+# It's very minimal at this point and uses default values.
+# You can always add more config options for more control.
+# We've included some commented out config examples here.
+# Just uncomment any of them to get that config option.
+#
+# For full config options, check the docs:
+#    docs.serverless.com
+#
+# Happy Coding!
+
+service: convio-auth
+
+custom:
+  dev:
+    DATASOURCE_URL: jdbc:mysql://13.228.131.80:3306/fullcircledata_bd
+    DATASOURCE_USERNAME: fullcircledata
+    DATASOURCE_PASSWORD: M#d4Ktre3ToY&8F
+    JWT_SECRET_KEY: mySecret
+    JWT_REFRESH_SECRET_KEY: myRefreshSecret
+    JWT_TOKEN_EXPIRATION_IN_SECONDS: 86400
+    JWT_REFRESH_TOKEN_EXPIRATION_IN_SECONDS: 86400
+    SES_EMAIL_FROM: akash.g@hubino.com
+    SES_ACCESS_KEY: AKIASKA4JS3QJPYVAONN
+    SES_SECRET_KEY: 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
+    EMAIL_URL: http://convio-frontend-develop.s3-website-ap-southeast-1.amazonaws.com/verify?
+  stage:
+    DATASOURCE_URL: jdbc:mysql://13.228.131.80:3306/fullcircledata_bd
+    DATASOURCE_USERNAME: fullcircledata
+    DATASOURCE_PASSWORD: M#d4Ktre3ToY&8F
+    JWT_SECRET_KEY: mySecret
+    JWT_REFRESH_SECRET_KEY: myRefreshSecret
+    JWT_TOKEN_EXPIRATION_IN_SECONDS: 86400
+    JWT_REFRESH_TOKEN_EXPIRATION_IN_SECONDS: 86400
+    SES_EMAIL_FROM: akash.g@hubino.com
+    SES_ACCESS_KEY: AKIASKA4JS3QJPYVAONN
+    SES_SECRET_KEY: 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
+    EMAIL_URL: http://convio-frontend-develop.s3-website-ap-southeast-1.amazonaws.com/verify?
+    
+provider:
+  name: aws
+  runtime: java8
+  stage: ${opt:stage, "dev"}
+  region: ${opt:region, "ap-south-1"}
+  lambdaHashingVersion: 20201221
+  memorySize: 512
+  timeout: 300
+  environment:
+    DATASOURCE_URL: ${self:custom.${self:provider.stage}.DATASOURCE_URL}
+    DATASOURCE_USERNAME: ${self:custom.${self:provider.stage}.DATASOURCE_USERNAME}
+    DATASOURCE_PASSWORD: ${self:custom.${self:provider.stage}.DATASOURCE_PASSWORD}
+    JWT_SECRET_KEY: ${self:custom.${self:provider.stage}.JWT_SECRET_KEY}
+    JWT_REFRESH_SECRET_KEY: ${self:custom.${self:provider.stage}.JWT_REFRESH_SECRET_KEY}
+    JWT_TOKEN_EXPIRATION_IN_SECONDS: ${self:custom.${self:provider.stage}.JWT_TOKEN_EXPIRATION_IN_SECONDS}
+    JWT_REFRESH_TOKEN_EXPIRATION_IN_SECONDS: ${self:custom.${self:provider.stage}.JWT_REFRESH_TOKEN_EXPIRATION_IN_SECONDS}
+    SES_EMAIL_FROM: ${self:custom.${self:provider.stage}.SES_EMAIL_FROM}
+    SES_ACCESS_KEY: ${self:custom.${self:provider.stage}.SES_ACCESS_KEY}
+    SES_SECRET_KEY: ${self:custom.${self:provider.stage}.SES_SECRET_KEY}
+    EMAIL_URL: ${self:custom.${self:provider.stage}.EMAIL_URL}
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - lambda:InvokeFunction
+        - secretsmanager:*
+      Resource: "*"
+
+package:
+  artifact: 'target/convio-auth-0.0.1-SNAPSHOT.jar'
+
+functions:
+  AuthenticationRequest:
+    handler: com.full.Circle.data.handler.AuthenticationHandler
+    events:
+      - http:
+          path: /auth
+          method: post
+          integration: lambda
+          request:
+            template: 
+              application/json: '{"flag":"$input.path("$").flag","authorization":"$input.params().header.get("Authorization")","parameters":{"username":"$input.path("$").parameters.username","password":"$input.path("$").parameters.password","confirm":"$input.path("$").parameters.confirm","refreshToken":"$input.path("$").parameters.refreshToken","id":"$input.path("$").parameters.id","email":"$input.path("$").parameters.email","code":"$input.path("$").parameters.code"}}'
+          cors:
+            origin: '*'
+            headers:
+              - Authorization
+              - X-Amz-Date
+              - Content-Type
+              - X-Api-Key
+              - X-Amz-Security-Token
+              - X-Amz-User-Agent
+            allowCredentials: false
+      - http:
+          path: /add/user
+          method: post
+          integration: lambda
+          request:
+            template: 
+              application/json: '{"flag": "$input.path("$").flag","authorization": "$input.params().header.get("Authorization")","parameters": {"userData":{"name": "$input.path("$").parameters.userData.name","email": "$input.path("$").parameters.userData.email"}}}'
+          cors:
+            origin: '*'
+            headers:
+              - Authorization
+              - X-Amz-Date
+              - Content-Type
+              - X-Api-Key
+              - X-Amz-Security-Token
+              - X-Amz-User-Agent
+            allowCredentials: false
+      - http:
+          path: /get/user
+          method: post
+          integration: lambda
+          request:
+            template: 
+              application/json: '{"flag": "$input.path("$").flag","authorization": "$input.params().header.get("Authorization")","parameters": {"userData":{"limit": "$input.path("$").parameters.userData.limit","offSet": "$input.path("$").parameters.userData.offSet"}}}'
+          cors:
+            origin: '*'
+            headers:
+              - Authorization
+              - X-Amz-Date
+              - Content-Type
+              - X-Api-Key
+              - X-Amz-Security-Token
+              - X-Amz-User-Agent
+            allowCredentials: false
+      - http:
+          path: /edit/user
+          method: post
+          integration: lambda
+          request:
+            template: 
+              application/json: '{"flag": "$input.path("$").flag","authorization": "$input.params().header.get("Authorization")","parameters": {"userData":{"id": "$input.path("$").parameters.userData.id","name": "$input.path("$").parameters.userData.name"}}}'
+          cors:
+            origin: '*'
+            headers:
+              - Authorization
+              - X-Amz-Date
+              - Content-Type
+              - X-Api-Key
+              - X-Amz-Security-Token
+              - X-Amz-User-Agent
+            allowCredentials: false

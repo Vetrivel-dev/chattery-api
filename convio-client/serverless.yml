@@ -1,0 +1,174 @@
+# Welcome to Serverless!
+#
+# This file is the main config file for your service.
+# It's very minimal at this point and uses default values.
+# You can always add more config options for more control.
+# We've included some commented out config examples here.
+# Just uncomment any of them to get that config option.
+#
+# For full config options, check the docs:
+#    docs.serverless.com
+#
+# Happy Coding!
+
+service: convio-client
+
+custom:
+  dev:
+    DATASOURCE_URL: jdbc:mysql://13.228.131.80:3306/fullcircledata_bd
+    DATASOURCE_USERNAME: fullcircledata
+    DATASOURCE_PASSWORD: M#d4Ktre3ToY&8F
+    JWT_SECRET_KEY: mySecret
+    JWT_REFRESH_SECRET_KEY: myRefreshSecret
+    JWT_TOKEN_EXPIRATION_IN_SECONDS: 86400
+    JWT_REFRESH_TOKEN_EXPIRATION_IN_SECONDS: 86400
+    SES_EMAIL_FROM: akashguna99@gmail.com
+    SES_ACCESS_KEY: AKIASKA4JS3QJPYVAONN
+    SES_SECRET_KEY: 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
+  stage:
+    DATASOURCE_URL: jdbc:mysql://13.228.131.80:3306/fullcircledata_bd
+    DATASOURCE_USERNAME: fullcircledata
+    DATASOURCE_PASSWORD: M#d4Ktre3ToY&8F
+    JWT_SECRET_KEY: mySecret
+    JWT_REFRESH_SECRET_KEY: myRefreshSecret
+    JWT_TOKEN_EXPIRATION_IN_SECONDS: 86400
+    JWT_REFRESH_TOKEN_EXPIRATION_IN_SECONDS: 86400
+    SES_EMAIL_FROM: akashguna99@gmail.com
+    SES_ACCESS_KEY: AKIASKA4JS3QJPYVAONN
+    SES_SECRET_KEY: 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
+
+provider:
+  name: aws
+  runtime: java8
+  stage: ${opt:stage, "dev"}
+  region: ${opt:region, "eu-west-2"}
+  lambdaHashingVersion: 20201221
+  memorySize: 512
+  timeout: 300
+  environment:
+    DATASOURCE_URL: ${self:custom.${self:provider.stage}.DATASOURCE_URL}
+    DATASOURCE_USERNAME: ${self:custom.${self:provider.stage}.DATASOURCE_USERNAME}
+    DATASOURCE_PASSWORD: ${self:custom.${self:provider.stage}.DATASOURCE_PASSWORD}
+    JWT_SECRET_KEY: ${self:custom.${self:provider.stage}.JWT_SECRET_KEY}
+    JWT_REFRESH_SECRET_KEY: ${self:custom.${self:provider.stage}.JWT_REFRESH_SECRET_KEY}
+    JWT_TOKEN_EXPIRATION_IN_SECONDS: ${self:custom.${self:provider.stage}.JWT_TOKEN_EXPIRATION_IN_SECONDS}
+    JWT_REFRESH_TOKEN_EXPIRATION_IN_SECONDS: ${self:custom.${self:provider.stage}.JWT_REFRESH_TOKEN_EXPIRATION_IN_SECONDS}
+    SES_EMAIL_FROM: ${self:custom.${self:provider.stage}.SES_EMAIL_FROM}
+    SES_ACCESS_KEY: ${self:custom.${self:provider.stage}.SES_ACCESS_KEY}
+    SES_SECRET_KEY: ${self:custom.${self:provider.stage}.SES_SECRET_KEY}
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - lambda:InvokeFunction
+        - secretsmanager:*
+      Resource: "*"
+
+package:
+  artifact: 'target/convio-client-0.0.1-SNAPSHOT.jar'
+
+functions:
+  AuthenticationRequest:
+    handler: com.convio.client.handler.ClientRequestHandler
+    events:
+      - http:
+          path: /add/client
+          method: post
+          integration: lambda
+          request:
+            template: 
+              application/json: '{"flag": "$input.path("$").flag","authorization": "$input.params().header.get("Authorization")","parameters": {"client":{"name": "$input.path("$").parameters.client.name","address": "$input.path("$").parameters.client.address","email":"$input.path("$").parameters.client.email","phone": "$input.path("$").parameters.client.phone"}}}'
+          cors:
+            origin: '*'
+            headers:
+              - Authorization
+              - X-Amz-Date
+              - Content-Type
+              - X-Api-Key
+              - X-Amz-Security-Token
+              - X-Amz-User-Agent
+            allowCredentials: false
+      - http:
+          path: /update/client
+          method: post
+          integration: lambda
+          request:
+            template: 
+              application/json: '{"flag": "$input.path("$").flag","authorization": "$input.params().header.get("Authorization")","parameters": {"client":{"id": "$input.path("$").parameters.client.id","name": "$input.path("$").parameters.client.name","address": "$input.path("$").parameters.client.address","email":"$input.path("$").parameters.client.email","phone": "$input.path("$").parameters.client.phone","status": "$input.path("$").parameters.client.status"}}}'
+          cors:
+            origin: '*'
+            headers:
+              - Authorization
+              - X-Amz-Date
+              - Content-Type
+              - X-Api-Key
+              - X-Amz-Security-Token
+              - X-Amz-User-Agent
+            allowCredentials: false
+      - http:
+          path: /get/client
+          method: post
+          integration: lambda
+          request:
+            template: 
+              application/json: '{"flag": "$input.path("$").flag","authorization": "$input.params().header.get("Authorization")","parameters": {"client":{"limit": "$input.path("$").parameters.client.limit","offSet": "$input.path("$").parameters.client.offSet"}}}'
+          cors:
+            origin: '*'
+            headers:
+              - Authorization
+              - X-Amz-Date
+              - Content-Type
+              - X-Api-Key
+              - X-Amz-Security-Token
+              - X-Amz-User-Agent
+            allowCredentials: false
+      - http:
+          path: /search/client
+          method: post
+          integration: lambda
+          request:
+            template: 
+              application/json: '{"flag": "$input.path("$").flag","authorization": "$input.params().header.get("Authorization")","parameters":{"client":{"limit": "$input.path("$").parameters.client.limit","offSet": "$input.path("$").parameters.client.offSet","name": "$input.path("$").parameters.client.name"}}}'
+          cors:
+            origin: '*'
+            headers:
+              - Authorization
+              - X-Amz-Date
+              - Content-Type
+              - X-Api-Key
+              - X-Amz-Security-Token
+              - X-Amz-User-Agent
+            allowCredentials: false
+      - http:
+          path: /get/client/id/name
+          method: post
+          integration: lambda
+          request:
+            template: 
+              application/json: '{"flag": "$input.path("$").flag","authorization": "$input.params().header.get("Authorization")"}'
+          cors:
+            origin: '*'
+            headers:
+              - Authorization
+              - X-Amz-Date
+              - Content-Type
+              - X-Api-Key
+              - X-Amz-Security-Token
+              - X-Amz-User-Agent
+            allowCredentials: false
+      - http:
+          path: /get/client/excel
+          method: post
+          integration: lambda
+          request:
+            template: 
+              application/json: '{"flag": "$input.path("$").flag","authorization": "$input.params().header.get("Authorization")"}'
+          cors:
+            origin: '*'
+            headers:
+              - Authorization
+              - X-Amz-Date
+              - Content-Type
+              - X-Api-Key
+              - X-Amz-Security-Token
+              - X-Amz-User-Agent
+            allowCredentials: false
