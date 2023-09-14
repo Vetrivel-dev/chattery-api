@@ -1,4 +1,5 @@
 const{mewsApiRequest} = require('../response_utils/mewsApiUtils');
+const{getLocation} = require('../response_utils/avvioApiUtils')
 
 const location = async (Client, HotelId) => {
   try {
@@ -22,7 +23,20 @@ const location = async (Client, HotelId) => {
   }
 };
 
+async function getLocationDetails() {
+  try {
+    const response = await getLocation();
+      // Handle the response data here
+      const responseData = response.siteList[0].address;
+      return responseData;
+  } catch (error) {
+      console.error('Error fetching data:', error);
+      throw error;
+  }
+}
+
 
   module.exports = {
-    location
+    location,
+    getLocationDetails
   }

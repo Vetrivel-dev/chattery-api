@@ -221,7 +221,6 @@ const getRoomCategories = async (Client, HotelId) => {
 
     //Function to Check Reservation Id in Booking Confirmation....
     async function checkReservation(Client, HotelId, reservationGroupId) {
-      const flag = "checkReservation";
     
         const url = 'https://api.mews-demo.com/api/distributor/v1/reservationGroups/get';
       

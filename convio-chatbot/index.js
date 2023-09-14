@@ -1,8 +1,8 @@
 const { detectIntent } = require('./dialogflow/dialogflow_functions');
-const { compareSuites,guestPerRoom } = require('./dialogflow/aboutTheRooms');
+const { compareSuites,guestPerRoom,getActiveRateAndRooms, getGuestCountForRooms} = require('./dialogflow/aboutTheRooms');
 const { includeInRate,paidSeperately } = require('./dialogflow/serviceAndAmenities');
 const { getHotelsWithRestaurant,breakfast } = require('./dialogflow/foodAndDrinks');
-const { location } = require('./dialogflow/location');
+const { location,getLocationDetails } = require('./dialogflow/location');
 const { checkRoomAvailability, getRoomCategories} = require('./dialogflow/reservation'); 
 const { responseMessage } = require('./response_utils/apiresponse');
 const {getClientIdHotelIdByBusinessId,getStaticData,getTypeFromHotelInfo} = require('./utils/connection')
@@ -47,8 +47,10 @@ const webhook = async (event,context) => {
     const client=requestBody.sessionInfo.parameters.Client;
     const hotelId=requestBody.sessionInfo.parameters.hotelId;
     const businessId=requestBody.sessionInfo.parameters.businessId;
+    const apiType=requestBody.sessionInfo.parameters.apiType;
 
     if (requestBody.sessionInfo.parameters.webhook === 'compareSuites'){
+      if(apiType === 'mews'){
       const compareSuitesResponse = await compareSuites(client,hotelId);
       console.log('Index.js', JSON.stringify(compareSuitesResponse));
       let responseData = {
@@ -59,11 +61,26 @@ const webhook = async (event,context) => {
             } 
       };
       console.log('Index.js', responseData);
-    return createResponse(200,responseData);
+      return createResponse(200,responseData);
+    }
+    else{
+      const avvioCompareSuitesResponse = await getActiveRateAndRooms();
+      console.log('Index.js', JSON.stringify(avvioCompareSuitesResponse));
+      let responseData = {
+            "session_info":{
+              "parameters": {
+                "compareSuitesResponse": avvioCompareSuitesResponse
+              }
+            } 
+      };
+      console.log('Index.js', responseData);
+      return createResponse(200,responseData);
+    }
     }
 
 
     if (requestBody.sessionInfo.parameters.webhook === 'guestPerRoom'){
+      if(apiType === 'mews'){
       const guestPerRoomResponse = await guestPerRoom(client,hotelId);
       console.log('Index.js', JSON.stringify(guestPerRoomResponse));
       let responseData = {
@@ -76,7 +93,21 @@ const webhook = async (event,context) => {
             } 
       };
       console.log('Index.js', responseData);
-    return createResponse(200,responseData);
+      return createResponse(200,responseData);
+    }
+    else{
+      const avvioGuestPerRoomResponse = await getGuestCountForRooms();
+      console.log('Index.js', JSON.stringify(avvioGuestPerRoomResponse));
+      let responseData = {
+            "session_info":{
+              "parameters": {
+                "guestPerRoomResponse": avvioGuestPerRoomResponse
+              }
+            } 
+      };
+      console.log('Index.js', responseData);
+      return createResponse(200,responseData);
+    }
     }
 
     if (requestBody.sessionInfo.parameters.webhook === 'includeInRate'){
@@ -165,9 +196,10 @@ const webhook = async (event,context) => {
 
     if (requestBody.sessionInfo.parameters.webhook === 'staticInfo'){
       let type = requestBody.sessionInfo.parameters.type;
-      console.log("typeee"+JSON.stringify(type));
+      console.log("type"+JSON.stringify(type));
       const hotelInfoResponse = await getStaticData(type,businessId);
       console.log('Index.js', JSON.stringify(hotelInfoResponse));
+      // if(apiType==='mews'){
       let responseData = {
             "session_info":{
               "parameters": {
@@ -177,6 +209,20 @@ const webhook = async (event,context) => {
       };
       console.log('Index.js', responseData);
     return createResponse(200,responseData);
+    //  }
+    //   else{
+    //     const avvioLocationResponse=await getLocationDetails();
+    //     console.log("AvvioLocation" +JSON.stringify(avvioLocationResponse));
+    //     let responseData = {
+    //       "session_info":{
+    //         "parameters": {
+    //           "hotelInfoResponse": avvioLocationResponse
+    //         }
+    //       }
+    // };
+    //  console.log('Index.js', responseData);
+    //  return createResponse(200,responseData);
+    //   }
     }
     
   } catch (error) {

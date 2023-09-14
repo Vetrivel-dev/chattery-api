@@ -1,5 +1,4 @@
 service: convio-chatbot
-
 	
 package:
   patterns:
@@ -8,7 +7,7 @@ package:
 provider:
   name: aws
   runtime: nodejs16.x
-  region: ${opt:region, "ap-south-1"}
+  region: ${opt:region, "eu-west-2"}
   stage: ${opt:stage, "dev"}
   lambdaHashingVersion: 20201221
   memorySize: 512
@@ -18,11 +17,19 @@ provider:
       Action:
         - lambda:InvokeFunction
       Resource: "*"
-
+  environment:
+    DATASOURCE_HOST_NAME: convio-api-dev.c2gz9p8itqtx.eu-west-2.rds.amazonaws.com
+    DATASOURCE_DB_NAME: convio_api_dev
+    DATASOURCE_USERNAME: admin
+    DATASOURCE_PASSWORD: M#d4Ktre3ToY&8F
+   
 # The `functions` block defines what code to deploy
 functions:
   API:
     handler: index.handler
+    environment:
+      DIALOGFLOW_LOCATION: us-central1
+      DIALOGFLOW_AGENTS: 5495f9d3-3760-4b1a-8236-01f233ed1e00
     # The `events` block defines how to trigger the uploadImage.handler code
     events:
       - http:

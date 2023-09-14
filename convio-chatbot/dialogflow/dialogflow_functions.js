@@ -8,7 +8,7 @@ const { Console } = require('console');
 const axios = require('axios');
 const {sendEmail,sendEmailToClient,generateEmailTemplateForBooking,generateEmailTemplateForBookingClient,generateEmailTemplateForGroupBooking,generateEmailTemplateForGroupBookingClient} =require('../utils/emailUtils');
 const {roomConfirmation,checkReservation,getRoomCategories,checkRoomAvailability } = require('./reservation');
-const {getConfigurationId,insertCustomerId,getReservationGroupId,getClientIdHotelIdByBusinessId} = require('../utils/connection');
+const {getConfigurationId,insertCustomerId,getReservationGroupId,getClientIdHotelIdByBusinessId,getApiType} = require('../utils/connection');
 const dialogFlowLocation = process.env.DIALOGFLOW_LOCATION;
 const dialogflowAgents = process.env.DIALOGFLOW_AGENTS;
 
@@ -21,13 +21,16 @@ const detectIntent = async (languageCode, queryText, sessionId,businessId,roomIn
     const client=clientHotel.mewsClientId;
     const hotelId=clientHotel.mewsHotelId;
 
+    let apiType = await getApiType(businessId);
+
     // For Local
+    // let sessionPath = sessionClient.projectLocationAgentSessionPath(PROJECID,"us-central1","5495f9d3-3760-4b1a-8236-01f233ed1e00", sessionId);
+
+    console.log("Dialogflow CX Location: "+JSON.stringify(dialogFlowLocation));
+    console.log("Dialogflow CX Agents: "+JSON.stringify(dialogflowAgents));
     
-    let sessionPath = sessionClient.projectLocationAgentSessionPath(PROJECID,"us-central1","5495f9d3-3760-4b1a-8236-01f233ed1e00", sessionId);
-
     // For Server
-
-    // let sessionPath = sessionClient.projectLocationAgentSessionPath(PROJECID,dialogFlowLocation,dialogflowAgents,sessionId);
+    let sessionPath = sessionClient.projectLocationAgentSessionPath(PROJECID,dialogFlowLocation,dialogflowAgents,sessionId);
 
     //The text query request.
     let request = {
@@ -42,7 +45,8 @@ const detectIntent = async (languageCode, queryText, sessionId,businessId,roomIn
               fields: {
                 Client: { kind: 'stringValue', stringValue: client },
                 hotelId: { kind: 'stringValue', stringValue: hotelId },
-                businessId: { kind: 'stringValue', stringValue: businessId}
+                businessId: { kind: 'stringValue', stringValue: businessId},
+                apiType: {Kind: 'stringValue', stringValue: apiType}
               }
             }
           }
@@ -89,6 +93,7 @@ const detectIntent = async (languageCode, queryText, sessionId,businessId,roomIn
 
     if(displayName === 'Compare Suites'){
     const response = params.compareSuitesResponse;
+    if(apiType === 'mews'){
         return  ({
             "type":carouselType,
             "webhookResponse":response,
@@ -96,15 +101,34 @@ const detectIntent = async (languageCode, queryText, sessionId,businessId,roomIn
             "hint":hint
         });
     }
-
-    if(displayName === 'Guests per room'){
-        const response = params.guestPerRoomResponse;
-        return({
-            "type":carouselType,
+    else{
+        return  ({
+            "type":listType,
             "webhookResponse":response,
             "buttons":buttons,
             "hint":hint
         });
+    }
+    }
+
+    if(displayName === 'Guests per room'){
+        const response = params.guestPerRoomResponse;
+        if(apiType === 'mews'){
+            return  ({
+                "type":carouselType,
+                "webhookResponse":response,
+                "buttons":buttons,
+                "hint":hint
+            });
+        }
+        else{
+            return  ({
+                "type":listType,
+                "webhookResponse":response,
+                "buttons":buttons,
+                "hint":hint
+            });
+        }
     }
 
     if(displayName === 'Include in rates'){
@@ -126,60 +150,6 @@ const detectIntent = async (languageCode, queryText, sessionId,businessId,roomIn
             "hint":hint
         });
     }
-    
-    // if(displayName === 'Breakfast'){
-    //     const response = params.breakFastResponse;
-    //     return({
-    //         "type":listType,
-    //         "webhookResponse":response,
-    //         "buttons":buttons,
-    //         "hint":hint
-    //     });
-    // }
-
-    // if(displayName === 'Restaurant'){
-    //     const response = params.getHotelsWithRestaurantResponse;
-    //     return({
-    //         "type":listType,
-    //         "webhookResponse":response,
-    //         "buttons":buttons,
-    //         "hint":hint
-    //     });
-    // }
-
-    // if(displayName === 'Location'){
-    //     const response = params.locationResponse;
-    //     return({
-    //         "type":tableType,
-    //         "webhookResponse":response,
-    //         "buttons":buttons,
-    //         "hint":hint
-    //     });
-    // }
-
-    // if(displayName === 'Booking quotation'){
-    //     return({
-    //         "type":form,
-    //         "webhookResponse":{"flag":"Room Booking Details"}
-    //     })
-    // }
-    
-    // if(displayName === 'Booking quotation webhook'){
-
-    //     const formattedArrivalDate = roomInfo.checkInDate;
-    //     const formattedDepartureDate = roomInfo.checkOutDate;
-    //     const adultCount = roomInfo.adultCount;
-    //     const childCount = roomInfo.childrenCount;
-    //     const roomCount = roomInfo.roomCount;
-        
-    //     const response = await getRoomCategories (client, hotelId, formattedArrivalDate, formattedDepartureDate, adultCount, childCount);
-    //     return({
-    //         "type":carouselType,
-    //         "webhookResponse":response,
-    //         "buttons":buttons,
-    //         "hint":hint,
-    //     });
-    // }
 
     if(displayName === 'Number of guests children'){
         const response = params.getRoomCategoryResponse;
@@ -327,6 +297,11 @@ const detectIntent = async (languageCode, queryText, sessionId,businessId,roomIn
       }
 
     if(displayName === 'Bank account information' ||
+       displayName === 'Bar' ||
+       displayName === 'Food & drinks' ||
+       displayName === 'Hotel summary' ||
+       displayName === 'Leisure areas' ||
+       displayName === 'What to pack?' ||
        displayName === 'Cancellation policy' ||
        displayName === 'Breakfast' ||
        displayName === 'Cash payments' ||
@@ -336,17 +311,18 @@ const detectIntent = async (languageCode, queryText, sessionId,businessId,roomIn
        displayName === 'Airplane' ||
        displayName === 'Bus' ||
        displayName === 'Car' ||
-       displayName === 'Transportation and shuttle' ||
        displayName === 'Opening hours' ||
        displayName === 'I will be late for my check-in' ||
        displayName === 'Late payments' ||
        displayName === 'Location' ||
        displayName === 'Luggage' ||
        displayName === 'Pets' ||
-       displayName === 'Pre arrival' ||
+       displayName === 'Pre - arrival' ||
        displayName === 'Special requests' ||
        displayName === 'Restaurant' ||
        displayName === 'Services and amenities' ||
+       displayName === 'Early arrival' ||
+       displayName === 'Transportation and shuttle' ||
        displayName === 'Weddings'){
         const response = params.hotelInfoResponse;
         return({

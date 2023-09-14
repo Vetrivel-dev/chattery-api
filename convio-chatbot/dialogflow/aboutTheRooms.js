@@ -1,4 +1,5 @@
 const{mewsApiRequest} = require('../response_utils/mewsApiUtils')
+const { getRateRoomMapping, getGuestCount } = require('../response_utils/avvioApiUtils');
 
 //To get CompareSuites using getHotel Mews API...
 const compareSuites = async (Client, HotelId) => {
@@ -30,7 +31,6 @@ const compareSuites = async (Client, HotelId) => {
       console.log('Getting RoomCategories With Name,Description,ImageBaseURL');
       // Send the processed data as the response
       return({flag:flag,response :{roomInfo: roomInfo}});
-  
     } catch (error) {
       console.log(error);
       return({ error: 'Something went wrong' });
@@ -74,7 +74,67 @@ const compareSuites = async (Client, HotelId) => {
     }
   }; 
 
+
+const getActiveRateAndRooms = async () => {
+
+  try {
+      const flag = "AVVIO_COMPARE_SUITES";
+      const response = await getRateRoomMapping();
+
+      // Make the Avivo API request
+      const siteList = response.siteList;
+
+      if (siteList && siteList.length > 0) {
+        const rates = siteList[0].rates;
+
+        // Find the first rate with status "active"
+        const activeRate = rates.find(rate => rate.status === 'active');
+ 
+        if (activeRate) {
+
+          // Get the rooms inside the active rate
+          const activeRateRooms = activeRate.rooms;
+          console.log('Active Rate Details:');
+
+          console.log(activeRate);
+          console.log('Rooms inside the Active Rate:');
+
+          activeRateRooms.forEach(room => {
+            return(`Room ID: ${room.roomID}, Room Code: ${room.roomCode}`);
+          });
+          return ({flag:flag,response:{roomInfo :{activeRate,activeRateRooms}}});
+        } else {
+          return('No active rates found.');
+        }
+      } else {
+        return('No data found for the site.');
+      }
+    } catch (error) {
+    console.log(error);
+    return({ error: 'Something went wrong' });
+  }
+};
+
+async function getGuestCountForRooms() {
+  try {
+
+    const flag = "AVVIO_GUEST_PER_ROOM";
+    const response = await getGuestCount();
+    
+      // Handle the response data here
+      const responseData = response.data;
+      return {flag:flag,response:{roomInfo :responseData}};
+  } catch (error) {
+      console.error('Error fetching data:', error);
+      throw error;
+  }
+}
+
+
+
   module.exports = {
     compareSuites,
-    guestPerRoom
+    guestPerRoom,
+    getActiveRateAndRooms,
+    getGuestCountForRooms
 };

@@ -3,21 +3,23 @@ const mysql = require('mysql2/promise');
 
 // For Local
 
-const dbConfig = {
-  host: 'convio-api-dev.c2gz9p8itqtx.eu-west-2.rds.amazonaws.com',
-  user: 'admin',
-  password: 'M#d4Ktre3ToY&8F',
-  database: 'convio_api_dev',
-};
+// const dbConfig = {
+//   host: 'convio-api-dev.c2gz9p8itqtx.eu-west-2.rds.amazonaws.com',
+//   user: 'admin',
+//   password: 'M#d4Ktre3ToY&8F',
+//   database: 'convio_api_dev',
+// };
 
 // For Cloud
 
-// const dbConfig = {
-//   host: process.env.DATASOURCE_HOST_NAME,
-//   user: process.env.DATASOURCE_USERNAME,
-//   password: process.env.DATASOURCE_PASSWORD,
-//   database: process.env.DATASOURCE_DB_NAME,
-// };
+const dbConfig = {
+  host: process.env.DATASOURCE_HOST_NAME,
+  user: process.env.DATASOURCE_USERNAME,
+  password: process.env.DATASOURCE_PASSWORD,
+  database: process.env.DATASOURCE_DB_NAME,
+};
+
+console.log("DB Connection: "+JSON.stringify(dbConfig));
 
 // To Get HotelEmail Using HotelId From Business....
 const getHotelEmailById = async (hotelId) => {
@@ -158,6 +160,26 @@ const getStaticData = async (typeName,businessId) => {
   }
 };
 
+// To Get API Type from the Table.... 
+const getApiType = async (businessId) => {
+  try {
+    const connection = await mysql.createConnection(dbConfig);
+    console.log("Database Connection"+JSON.stringify(connection));
+    const [rows] = await connection.execute('SELECT api_type FROM business WHERE id=? ', [businessId]);
+    console.log("getApiType");
+    connection.end();
+
+    if (rows.length === 0) {
+      throw new Error(`BusinessId:${businessId} not found.`);
+    }
+
+    return rows[0].api_type;  
+  } catch (error) {
+    console.error('Error while fetching text by businessId:', error.message);
+    throw error;
+  }
+};
+
 module.exports = {
   getHotelEmailById,
   getConfigurationId,
@@ -165,5 +187,6 @@ module.exports = {
   //insertCustomerIdForGroupBooking,
   getReservationGroupId,
   getClientIdHotelIdByBusinessId,
-  getStaticData
+  getStaticData,
+  getApiType
 };
