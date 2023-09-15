@@ -323,6 +323,10 @@ const detectIntent = async (languageCode, queryText, sessionId,businessId,roomIn
        displayName === 'Services and amenities' ||
        displayName === 'Early arrival' ||
        displayName === 'Transportation and shuttle' ||
+       displayName === 'Hotel (opening hours)' ||
+       displayName === 'Restaurant (opening hours)' ||
+       displayName === 'Leisure centre (opening hours)' ||
+       displayName === 'Bar (opening hours)' ||
        displayName === 'Weddings'){
         const response = params.hotelInfoResponse;
         return({
